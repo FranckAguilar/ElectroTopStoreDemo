@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -54,10 +55,17 @@ class DatabaseSeeder extends Seeder
             'STV',
         ] as $name) {
             $slug = Str::slug($name);
-            \App\Models\Brand::firstOrCreate(
+            $brand = \App\Models\Brand::firstOrCreate(
                 ['slug' => $slug],
                 ['name' => $name, 'logo_path' => null],
             );
+
+            if ($brand->logo_path === null) {
+                $files = Storage::disk('public')->files("brands/{$brand->id}");
+                if (count($files) > 0) {
+                    $brand->forceFill(['logo_path' => $files[0]])->save();
+                }
+            }
         }
 
         foreach (['pending', 'paid', 'shipped', 'delivered', 'cancelled'] as $status) {
