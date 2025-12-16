@@ -11,7 +11,7 @@ COPY composer.json composer.lock ./
 # En este stage solo tenemos composer.* (no el proyecto completo), así que desactivamos scripts.
 RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader --no-scripts
 
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
