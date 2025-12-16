@@ -7,7 +7,9 @@ FROM composer:2 AS vendor
 WORKDIR /app
 
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+# Laravel ejecuta scripts que llaman a `php artisan ...` durante `composer install`.
+# En este stage solo tenemos composer.* (no el proyecto completo), así que desactivamos scripts.
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader --no-scripts
 
 FROM php:8.2-apache
 
@@ -48,4 +50,3 @@ ENV APP_ENV=production \
 EXPOSE 80
 
 CMD ["/var/www/html/render-start.sh"]
-
