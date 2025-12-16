@@ -1,0 +1,367 @@
+{
+  "info": {
+    "name": "ElectroTopStore API (Local)",
+    "_postman_id": "8d6a6c2d-0f4f-4cdb-8e11-2b2fd6b3f0e6",
+    "description": "Base URL: {{base_url}}\n\nNotes:\n- Guest cart uses header X-Session-Id: {{session_id}}\n- Auth uses Bearer tokens saved to env vars admin_token/customer_token\n- Upload endpoints require selecting a file in Postman (form-data file fields).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /api/v1/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/v1/health", "host": ["{{base_url}}"], "path": ["api", "v1", "health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /api/v1/auth/login (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.token) pm.environment.set('admin_token', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Session-Id", "value": "{{session_id}}", "disabled": true }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/v1/auth/login", "host": ["{{base_url}}"], "path": ["api", "v1", "auth", "login"] }
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/login (customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.token) pm.environment.set('customer_token', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Session-Id", "value": "{{session_id}}", "disabled": true }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"{{customer_password}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/v1/auth/login", "host": ["{{base_url}}"], "path": ["api", "v1", "auth", "login"] }
+          }
+        },
+        {
+          "name": "GET /api/v1/auth/me (customer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/v1/auth/me", "host": ["{{base_url}}"], "path": ["api", "v1", "auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Catalog",
+      "item": [
+        {
+          "name": "GET /api/v1/categories",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/v1/categories", "host": ["{{base_url}}"], "path": ["api", "v1", "categories"] } }
+        },
+        {
+          "name": "GET /api/v1/brands",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/v1/brands", "host": ["{{base_url}}"], "path": ["api", "v1", "brands"] } }
+        },
+        {
+          "name": "GET /api/v1/payment-methods",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/v1/payment-methods", "host": ["{{base_url}}"], "path": ["api", "v1", "payment-methods"] } }
+        },
+        {
+          "name": "GET /api/v1/products",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/v1/products?per_page=12", "host": ["{{base_url}}"], "path": ["api", "v1", "products"], "query": [{ "key": "per_page", "value": "12" }] } }
+        },
+        {
+          "name": "GET /api/v1/products/:id",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/v1/products/{{product_id}}", "host": ["{{base_url}}"], "path": ["api", "v1", "products", "{{product_id}}"] } }
+        }
+      ]
+    },
+    {
+      "name": "Guest Cart (X-Session-Id)",
+      "item": [
+        {
+          "name": "POST /api/v1/cart/session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.session_id) pm.environment.set('session_id', json.session_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/api/v1/cart/session", "host": ["{{base_url}}"], "path": ["api", "v1", "cart", "session"] }
+          }
+        },
+        {
+          "name": "GET /api/v1/cart (guest)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/cart", "host": ["{{base_url}}"], "path": ["api", "v1", "cart"] }
+          }
+        },
+        {
+          "name": "POST /api/v1/cart/items (guest add)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const items = json && json.items;",
+                  "if (Array.isArray(items) && items.length) pm.environment.set('cart_item_id', items[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Session-Id", "value": "{{session_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"product_id\": {{product_id}},\n  \"quantity\": 1\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/cart/items", "host": ["{{base_url}}"], "path": ["api", "v1", "cart", "items"] }
+          }
+        },
+        {
+          "name": "PATCH /api/v1/cart/items/:id (guest update)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Session-Id", "value": "{{session_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 2\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/cart/items/{{cart_item_id}}", "host": ["{{base_url}}"], "path": ["api", "v1", "cart", "items", "{{cart_item_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer (checkout + proof)",
+      "item": [
+        {
+          "name": "POST /api/v1/cart/checkout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.order_id) pm.environment.set('order_id', json.order_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"payment_method_id\": {{payment_method_id}},\n  \"shipping_address\": \"Av. Demo 123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/cart/checkout", "host": ["{{base_url}}"], "path": ["api", "v1", "cart", "checkout"] }
+          }
+        },
+        {
+          "name": "GET /api/v1/orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customer_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/orders", "host": ["{{base_url}}"], "path": ["api", "v1", "orders"] }
+          }
+        },
+        {
+          "name": "POST /api/v1/orders/:id/payment-proof (upload)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "payment_method_id", "value": "{{payment_method_id}}", "type": "text" },
+                { "key": "transaction_reference", "value": "TRX-001", "type": "text" },
+                { "key": "proof", "type": "file", "src": [] }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/api/v1/orders/{{order_id}}/payment-proof", "host": ["{{base_url}}"], "path": ["api", "v1", "orders", "{{order_id}}", "payment-proof"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin (setup + CRUD)",
+      "item": [
+        {
+          "name": "POST /api/v1/admin/payment-methods",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.payment_method && json.payment_method.id) pm.environment.set('payment_method_id', json.payment_method.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Yape\",\n  \"yape_number\": \"999999999\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/v1/admin/payment-methods", "host": ["{{base_url}}"], "path": ["api", "v1", "admin", "payment-methods"] }
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const j = pm.response.json(); if (j?.category?.id) pm.environment.set('category_id', j.category.id);"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"CCTV\",\n  \"slug\": \"cctv\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/categories", "host": ["{{base_url}}"], "path": ["api", "v1", "admin", "categories"] }
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/brands",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const j = pm.response.json(); if (j?.brand?.id) pm.environment.set('brand_id', j.brand.id);"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Hikvision\",\n  \"slug\": \"hikvision\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/brands", "host": ["{{base_url}}"], "path": ["api", "v1", "admin", "brands"] }
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/brands/:id/logo (upload)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "logo", "type": "file", "src": [] }]
+            },
+            "url": { "raw": "{{base_url}}/api/v1/admin/brands/{{brand_id}}/logo", "host": ["{{base_url}}"], "path": ["api", "v1", "admin", "brands", "{{brand_id}}", "logo"] }
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/products",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const j = pm.response.json(); if (j?.product?.id) pm.environment.set('product_id', j.product.id);"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"SKU-001\",\n  \"name\": \"Camara 2MP\",\n  \"description\": \"Demo\",\n  \"category_id\": {{category_id}},\n  \"brand_id\": {{brand_id}},\n  \"price\": 199.9,\n  \"stock_quantity\": 10,\n  \"status\": \"active\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/v1/admin/products", "host": ["{{base_url}}"], "path": ["api", "v1", "admin", "products"] }
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/products/:id/images (upload)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j?.image?.id) pm.environment.set('product_image_id', j.image.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "image", "type": "file", "src": [] }]
+            },
+            "url": { "raw": "{{base_url}}/api/v1/admin/products/{{product_id}}/images", "host": ["{{base_url}}"], "path": ["api", "v1", "admin", "products", "{{product_id}}", "images"] }
+          }
+        }
+      ]
+    }
+  ]
+}
+
