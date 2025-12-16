@@ -15,7 +15,8 @@ class CsvCatalogSeeder extends Seeder
 {
     public function run(): void
     {
-        if (! filter_var((string) env('SEED_CATALOG_FROM_CSV', 'false'), FILTER_VALIDATE_BOOL)) {
+        // Default: enabled. In production you can disable setting SEED_CATALOG_FROM_CSV=false
+        if (! filter_var((string) env('SEED_CATALOG_FROM_CSV', 'true'), FILTER_VALIDATE_BOOL)) {
             return;
         }
 
@@ -39,6 +40,9 @@ class CsvCatalogSeeder extends Seeder
 
         /** @var array<string, int>|null $header */
         $header = null;
+
+        $createdProducts = 0;
+        $attachedImages = 0;
 
         foreach ($rows as $row) {
             if (! is_array($row) || (count($row) === 1 && ($row[0] === null || trim((string) $row[0]) === ''))) {
@@ -78,8 +82,19 @@ class CsvCatalogSeeder extends Seeder
                 ],
             );
 
-            $this->seedProductImages($product, $normalized['images'] ?? null, $imagesDir);
+            if ($product->wasRecentlyCreated) {
+                $createdProducts++;
+            }
+
+            $attachedImages += $this->seedProductImages($product, $normalized['images'] ?? null, $imagesDir);
         }
+
+        logger()->info('CsvCatalogSeeder finished', [
+            'csv' => $csvRelative,
+            'images_dir' => $imagesDirRelative,
+            'created_products' => $createdProducts,
+            'attached_images' => $attachedImages,
+        ]);
     }
 
     /**
@@ -166,21 +181,18 @@ class CsvCatalogSeeder extends Seeder
         ];
     }
 
-    private function seedProductImages(Product $product, ?string $images, string $imagesDir): void
+    private function seedProductImages(Product $product, ?string $images, string $imagesDir): int
     {
-        if ($images === null || $images === '') {
-            return;
-        }
-
         $disk = Storage::disk('public');
         $destDir = (string) env('SEED_PRODUCTS_PUBLIC_DIR', 'products-static');
 
-        $files = array_values(array_filter(array_map('trim', explode('|', $images))));
-        if (count($files) === 0) {
-            return;
+        $files = [];
+        if ($images !== null && $images !== '') {
+            $files = array_values(array_filter(array_map('trim', explode('|', $images))));
         }
 
         $nextOrder = (int) ($product->images()->max('order') ?? -1) + 1;
+        $attached = 0;
 
         foreach ($files as $filename) {
             $src = rtrim($imagesDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$filename;
@@ -207,7 +219,31 @@ class CsvCatalogSeeder extends Seeder
                 'order' => $nextOrder,
             ]);
             $nextOrder++;
+            $attached++;
         }
+
+        // Fallback: if no images were attached from the CSV/images dir, but there are already
+        // files in storage (ex: committed `storage/app/public/products/{id}/*`), attach them.
+        if ($attached === 0) {
+            $storageFiles = $disk->files("products/{$product->id}");
+            sort($storageFiles);
+            foreach ($storageFiles as $path) {
+                if (ProductImage::query()
+                    ->where('product_id', $product->id)
+                    ->where('image_path', $path)
+                    ->exists()) {
+                    continue;
+                }
+
+                $product->images()->create([
+                    'image_path' => $path,
+                    'order' => $nextOrder,
+                ]);
+                $nextOrder++;
+                $attached++;
+            }
+        }
+
+        return $attached;
     }
 }
-
