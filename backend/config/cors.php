@@ -17,7 +17,9 @@ return [
 
     'allowed_origins' => $allowedOrigins,
 
-    'allowed_origins_patterns' => [],
+    // Permite deploys de Vercel (incluye preview URLs). CORS solo afecta navegadores.
+    // Si quieres restringirlo, define `CORS_ALLOWED_ORIGINS` en Render con el dominio exacto.
+    'allowed_origins_patterns' => ['/^https:\\/\\/.*\\.vercel\\.app$/'],
 
     'allowed_headers' => ['*'],
 
