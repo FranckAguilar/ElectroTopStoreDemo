@@ -56,6 +56,7 @@ En Render → Service → **Environment** agrega:
 - `DB_PASSWORD=...`
 - `FILESYSTEM_DISK=public`
 - `LOG_CHANNEL=stderr`
+- `CORS_ALLOWED_ORIGINS=https://TU_FRONTEND_VERCEL.vercel.app`
 
 ### D) Qué hace el contenedor al iniciar
 El `backend/render-start.sh` ejecuta:
@@ -71,5 +72,5 @@ Si quieres conservar imágenes/logos/comprobantes de pago en producción, lo rec
 
 ## 4) CORS
 Cuando el frontend esté en Vercel y el backend en Render, son dominios distintos.
-Si en el navegador te sale error de CORS, hay que permitir el dominio de Vercel en `backend/config/cors.php`.
-
+Si en el navegador te sale error de CORS:
+- En Render (backend) agrega/actualiza `CORS_ALLOWED_ORIGINS` con el origen exacto de Vercel (ej. `https://electro-top-store-demo.vercel.app`).
