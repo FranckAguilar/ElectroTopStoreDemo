@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -103,6 +104,10 @@ class DatabaseSeeder extends Seeder
             'home.best_sellers_limit' => '12',
         ] as $key => $value) {
             Setting::firstOrCreate(['key' => $key], ['value' => $value]);
+        }
+
+        if (Schema::hasTable('products') && \App\Models\Product::query()->count() === 0) {
+            $this->call(CsvCatalogSeeder::class);
         }
     }
 }

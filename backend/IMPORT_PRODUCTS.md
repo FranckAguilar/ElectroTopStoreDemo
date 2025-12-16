@@ -32,6 +32,19 @@ Las imágenes deben estar en una sola carpeta (no recursivo). Extensiones soport
 
 Si no llenas `images`, el importador intenta buscar por `codigo` o `name`.
 
+## Import autom├ítico (Render) sin usar Shell
+
+Si quieres que **Render cargue el cat├álogo autom├íticamente** (sin entrar a la Shell de Render), puedes:
+
+1) Copiar tus im├ígenes al repo en `backend/import/assets/products/` (con el mismo nombre que en la columna `images` del CSV).
+2) En Render, configurar estas variables de entorno:
+   - `SEED_CATALOG_FROM_CSV=true`
+   - `SEED_PRODUCTS_CSV=import/products.example.csv`
+   - `SEED_PRODUCTS_IMAGES_DIR=import/assets/products`
+   - `SEED_PRODUCTS_PUBLIC_DIR=products-static`
+
+Con eso, el seeder `DatabaseSeeder` llama a `CsvCatalogSeeder` **solo si la tabla `products` est├í vac├ía**, crea productos y copia im├ígenes a `storage/app/public/products-static/`.
+
 ## 3) Ejecutar
 
 Primero prueba con simulación:
